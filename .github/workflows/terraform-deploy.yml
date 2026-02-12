@@ -7,12 +7,10 @@ on:
         description: "Client name (vegapay, unity, ssfb, etc.)"
         required: true
         default: "vegapay"
-
       environment:
         description: "Environment (dev/staging/prod)"
         required: true
         default: "prod"
-
       service:
         description: "Service to deploy (forex, wallet, etc.)"
         required: true
@@ -32,13 +30,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      #  Setup Terraform
+      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
 
-      #  Configure AWS Credentials
+      # Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -46,13 +44,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-       #  Debug AWS Credentials
+      # Debug AWS Credentials
       - name: Test AWS creds
-        run: aws sts get-caller-identity   
+        run: aws sts get-caller-identity
 
-      #  Terraform Init
+      # Terraform Init (with backend reconfigure)
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -reconfigure
+
+      # Terraform Validate
+      - name: Terraform Validate
+        run: terraform validate
 
       # Terraform Plan
       - name: Terraform Plan
@@ -64,8 +66,9 @@ jobs:
             -var "client=${{ github.event.inputs.client }}" \
             -var "enabled_services=[\"${{ github.event.inputs.service }}\"]"
 
-      # Terraform Apply
+      # Terraform Apply (manual trigger only)
       - name: Terraform Apply
+        if: github.event_name == 'workflow_dispatch'
         run: |
           terraform apply -auto-approve \
             -var "grafana_url=${{ secrets.GRAFANA_URL }}" \
@@ -73,4 +76,3 @@ jobs:
             -var "environment=${{ github.event.inputs.environment }}" \
             -var "client=${{ github.event.inputs.client }}" \
             -var "enabled_services=[\"${{ github.event.inputs.service }}\"]"
-
