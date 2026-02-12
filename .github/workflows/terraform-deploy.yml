@@ -46,6 +46,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
+       #  Debug AWS Credentials
+      - name: Test AWS creds
+        run: aws sts get-caller-identity   
+
       #  Terraform Init
       - name: Terraform Init
         run: terraform init
