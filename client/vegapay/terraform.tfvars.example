@@ -1,0 +1,5 @@
+grafana_url      = ""
+grafana_auth     = ""
+environment      = "dev"
+enabled_services = ["forex-account"]
+datasources      = ["prometheus"]
