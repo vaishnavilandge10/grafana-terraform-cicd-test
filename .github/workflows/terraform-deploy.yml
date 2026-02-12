@@ -26,17 +26,17 @@ jobs:
         working-directory: client/${{ github.event.inputs.client }}
 
     steps:
-      # Checkout repo
+      #  Checkout repo
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Setup Terraform
+      #  Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
 
-      # Configure AWS Credentials
+      #  Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -44,19 +44,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-      # Debug AWS Credentials
-      - name: Test AWS creds
-        run: aws sts get-caller-identity
+      #  Test AWS Credentials early
+      - name: Validate AWS Credentials
+        run: |
+          echo "Checking AWS identity..."
+          aws sts get-caller-identity
+        continue-on-error: false
 
-      # Terraform Init (with backend reconfigure)
+      #  Terraform Init (with backend reconfigure)
       - name: Terraform Init
         run: terraform init -reconfigure
 
-      # Terraform Validate
+      # 6️⃣ Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
-      # Terraform Plan
+      #  Terraform Plan
       - name: Terraform Plan
         run: |
           terraform plan \
@@ -66,13 +69,15 @@ jobs:
             -var "client=${{ github.event.inputs.client }}" \
             -var "enabled_services=[\"${{ github.event.inputs.service }}\"]"
 
-      # Terraform Apply (manual trigger only)
+      # Terraform Apply (manual approval)
       - name: Terraform Apply
         if: github.event_name == 'workflow_dispatch'
         run: |
+          echo "Applying Terraform for client: ${{ github.event.inputs.client }} on environment: ${{ github.event.inputs.environment }}"
           terraform apply -auto-approve \
             -var "grafana_url=${{ secrets.GRAFANA_URL }}" \
             -var "grafana_auth=${{ secrets.GRAFANA_AUTH }}" \
             -var "environment=${{ github.event.inputs.environment }}" \
             -var "client=${{ github.event.inputs.client }}" \
             -var "enabled_services=[\"${{ github.event.inputs.service }}\"]"
+
