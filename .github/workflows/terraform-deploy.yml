@@ -1,77 +1,67 @@
 name: Terraform Deploy Grafana
 
 on:
-workflow_dispatch:
-inputs:
-client:
-description: "Client folder name"
-required: true
-default: "unity-prod"
+  workflow_dispatch:
+    inputs:
+      client:
+        description: "Client folder name"
+        required: true
+        default: "unity-prod"
 
-  environment:
-    description: "Environment"
-    required: true
-    default: "prod"
+      environment:
+        description: "Environment"
+        required: true
+        default: "prod"
 
-  service:
-    description: "Service module"
-    required: true
-    default: "unity-service"
-
+      service:
+        description: "Service module"
+        required: true
+        default: "unity-service"
 
 jobs:
-terraform:
-name: Terraform Deploy
-runs-on: ubuntu-latest
+  terraform:
+    name: Terraform Deploy
+    runs-on: ubuntu-latest
 
-```
-defaults:
-  run:
-    working-directory: client/${{ github.event.inputs.client }}
+    defaults:
+      run:
+        working-directory: client/${{ github.event.inputs.client }}
 
-steps:
-  # Checkout repo
-  - name: Checkout Code
-    uses: actions/checkout@v3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  # Setup Terraform
-  - name: Setup Terraform
-    uses: hashicorp/setup-terraform@v2
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
-  # Configure AWS (Required for S3 backend)
-  - name: Configure AWS Credentials
-    uses: aws-actions/configure-aws-credentials@v4
-    with:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws-region: ap-south-1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
 
-  # Verify AWS login
-  - name: Validate AWS Identity
-    run: aws sts get-caller-identity
+      - name: Validate AWS Identity
+        run: aws sts get-caller-identity
 
-  # Terraform Init (connects to S3 state)
-  - name: Terraform Init
-    run: terraform init -reconfigure
+      - name: Terraform Init
+        run: terraform init -reconfigure
 
-  # Terraform Validate
-  - name: Terraform Validate
-    run: terraform validate
+      - name: Terraform Validate
+        run: terraform validate
 
-  # Terraform Plan
-  - name: Terraform Plan
-    run: |
-      terraform plan \
-        -var="grafana_url=${{ secrets.GRAFANA_URL }}" \
-        -var="grafana_auth=${{ secrets.GRAFANA_AUTH }}" \
-        -var="environment=${{ github.event.inputs.environment }}" \
-        -var='enabled_services=["${{ github.event.inputs.service }}"]'
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -var="grafana_url=${{ secrets.GRAFANA_URL }}" \
+            -var="grafana_auth=${{ secrets.GRAFANA_AUTH }}" \
+            -var="environment=${{ github.event.inputs.environment }}" \
+            -var='enabled_services=["${{ github.event.inputs.service }}"]'
 
-  # Terraform Apply
-  - name: Terraform Apply
-    run: |
-      terraform apply -auto-approve \
-        -var="grafana_url=${{ secrets.GRAFANA_URL }}" \
-        -var="grafana_auth=${{ secrets.GRAFANA_AUTH }}" \
-        -var="environment=${{ github.event.inputs.environment }}" \
-        -var='enabled_services=["${{ github.event.inputs.service }}"]'
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve \
+            -var="grafana_url=${{ secrets.GRAFANA_URL }}" \
+            -var="grafana_auth=${{ secrets.GRAFANA_AUTH }}" \
+            -var="environment=${{ github.event.inputs.environment }}" \
+            -var='enabled_services=["${{ github.event.inputs.service }}"]'
