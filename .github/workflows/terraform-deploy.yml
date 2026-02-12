@@ -6,7 +6,7 @@ on:
       client:
         description: "Client folder name"
         required: true
-        default: "unity-prod"
+        default: "vegapay"
 
       environment:
         description: "Environment"
@@ -16,7 +16,7 @@ on:
       service:
         description: "Service module"
         required: true
-        default: "unity-service"
+        default: "forex"
 
 jobs:
   terraform:
