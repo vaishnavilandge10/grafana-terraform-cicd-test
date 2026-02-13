@@ -57,6 +57,7 @@ jobs:
             -var="grafana_url=${{ secrets.GRAFANA_URL }}" \
             -var="grafana_auth=${{ secrets.GRAFANA_AUTH }}" \
             -var="environment=${{ github.event.inputs.environment }}" \
+            -var="client=["${{ github.event.inputs.client }}"\
             -var='enabled_services=["${{ github.event.inputs.service }}"]'
 
       - name: Terraform Apply
@@ -65,4 +66,5 @@ jobs:
             -var="grafana_url=${{ secrets.GRAFANA_URL }}" \
             -var="grafana_auth=${{ secrets.GRAFANA_AUTH }}" \
             -var="environment=${{ github.event.inputs.environment }}" \
+            -var="client=${{ github.event.inputs.client }}" \
             -var='enabled_services=["${{ github.event.inputs.service }}"]'
