@@ -28,12 +28,15 @@ jobs:
         working-directory: client/${{ github.event.inputs.client }}
 
     steps:
+      # Checkout Code
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
+      # Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -42,29 +45,26 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ap-south-1
 
+      # Validate AWS Identity
       - name: Validate AWS Identity
         run: aws sts get-caller-identity
 
+      # Terraform Init
       - name: Terraform Init
         run: terraform init -reconfigure
 
+      # Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
+      # Terraform Plan
       - name: Terraform Plan
         run: |
           terraform plan \
             -var="grafana_url=${{ secrets.GRAFANA_URL }}" \
             -var="grafana_auth=${{ secrets.GRAFANA_AUTH }}" \
             -var="environment=${{ github.event.inputs.environment }}" \
-            -var="client=["${{ github.event.inputs.client }}"\
-            -var='enabled_services=["${{ github.event.inputs.service }}"]'
-
-      - name: Terraform Apply
-        run: |
-          terraform apply -auto-approve \
-            -var="grafana_url=${{ secrets.GRAFANA_URL }}" \
-            -var="grafana_auth=${{ secrets.GRAFANA_AUTH }}" \
-            -var="environment=${{ github.event.inputs.environment }}" \
             -var="client=${{ github.event.inputs.client }}" \
-            -var='enabled_services=["${{ github.event.inputs.service }}"]'
+            -var="enabled_services=[\"${{ github.event.inputs.service }}\"]"
+
+   
