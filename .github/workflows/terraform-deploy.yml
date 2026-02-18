@@ -23,7 +23,8 @@ jobs:
     name: Terraform Deploy
 
    
-    runs-on: terraform-prod-runner
+    runs-on: [self-hosted, Linux, X64]
+
 
     defaults:
       run:
