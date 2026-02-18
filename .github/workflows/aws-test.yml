@@ -5,7 +5,8 @@ on:
 
 jobs:
   test-aws:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted   # ← changed here
+
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
